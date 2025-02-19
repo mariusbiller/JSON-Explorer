@@ -4,218 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JSON-Lens</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    .folder,
-    .file {
-      cursor: pointer;
-      margin: 2px 0;
-      border: none;
-    }
-    .folder {
-      font-weight: bold;
-    }
-    .folder-content {
-      margin-left: 20px;
-    }
-    .hidden {
-      display: none;
-    }
-    .folder:hover,
-    .file:hover {
-      background-color: #f8f9fa;
-    }
-    .navbar-brand img {
-      vertical-align: middle;
-    }
-    /* New CSS for aligned file display */
-    .file-key {
-      width: 150px;
-      display: inline-block;
-    }
-    .file-value {
-      margin-left: 10px;
-    }
+    body { font-size: 12px; }
+    .folder, .file { cursor: pointer; margin: 1px 0; border: none; padding: 2px 5px; }
+    .folder { font-weight: bold; }
+    .folder-content { margin-left: 10px; }
+    .hidden { display: none; }
+    .folder:hover, .file:hover { background-color: #f8f9fa; }
+    .navbar-brand img { vertical-align: middle; }
+    .file-key { width: 120px; display: inline-block; }
+    .file-value { margin-left: 5px; }
+    .list-group-item { padding: 2px 5px; }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="padding: 5px;">
     <div class="container-fluid">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/5968/5968774.png"
-          alt="logo"
-          width="30"
-          class="me-2"
-        />
-        <span>JSON-Lens</span>
+        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968774.png" alt="logo" width="20" class="me-1"/>
+        <span style="font-size: 14px;">JSON-Lens</span>
       </a>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <div class="container mt-4">
+  <div class="container mt-2">
     <div id="fileBrowser" class="list-group"></div>
   </div>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Example JSON structure
-    const fileSystem = {
-        "restaurant": {
-          "name": "Sunny Side Cafe",
-          "open": true,
-          "rating": 4.7,
-          "location": {
-            "address": "123 Main Street",
-            "city": "Berlin",
-            "country": "Germany"
-          },
-          "menu": [
-            {
-              "id": 1,
-              "name": "Pancakes",
-              "price": 7.99,
-              "ingredients": ["Flour", "Milk", "Eggs", "Sugar"],
-              "vegan": false,
-              "available": true,
-              "sizes": {
-                "small": 5.99,
-                "medium": 7.99,
-                "large": 9.99
-              }
-            },
-            {
-              "id": 2,
-              "name": "Avocado Toast",
-              "price": 6.99,
-              "ingredients": ["Bread", "Avocado", "Tomato", "Olive Oil"],
-              "vegan": true,
-              "available": true,
-              "sizes": null
-            }
-          ],
-          "orders": [
-            {
-              "orderId": "ORD12345",
-              "customer": {
-                "name": "Alice Johnson",
-                "phone": "+49 152 3456789",
-                "isLoyaltyMember": true
-              },
-              "items": [
-                {
-                  "menuId": 1,
-                  "quantity": 2,
-                  "size": "medium"
-                },
-                {
-                  "menuId": 2,
-                  "quantity": 1,
-                  "size": null
-                }
-              ],
-              "totalPrice": 22.97,
-              "status": "pending",
-              "paymentMethod": "credit_card"
-            }
-          ]
-        }
-      }
+    const fileSystem = { "restaurant": { "name": "Sunny Side Cafe", "open": true, "rating": 4.7, "location": { "address": "123 Main Street", "city": "Berlin", "country": "Germany" }, "menu": [ { "id": 1, "name": "Pancakes", "price": 7.99, "ingredients": ["Flour", "Milk", "Eggs", "Sugar"], "vegan": false, "available": true, "sizes": { "small": 5.99, "medium": 7.99, "large": 9.99 } }, { "id": 2, "name": "Avocado Toast", "price": 6.99, "ingredients": ["Bread", "Avocado", "Tomato", "Olive Oil"], "vegan": true, "available": true, "sizes": null } ], "orders": [ { "orderId": "ORD12345", "customer": { "name": "Alice Johnson", "phone": "+49 152 3456789", "isLoyaltyMember": true }, "items": [ { "menuId": 1, "quantity": 2, "size": "medium" }, { "menuId": 2, "quantity": 1, "size": null } ], "totalPrice": 22.97, "status": "pending", "paymentMethod": "credit_card" } ] } };
 
     const fileBrowser = document.getElementById("fileBrowser");
-
-    // Recursive function to generate the file browser
     function createBrowserContent(json, parentElement) {
       for (const key in json) {
         switch (typeof json[key]) {
-          // Create Text
-          case "string": {
+          case "string":
+          case "number":
+          case "boolean": {
             const file = document.createElement("div");
             file.className = "list-group-item file d-flex align-items-center";
-            file.innerHTML = `
-              <i class="bi bi-alphabet"></i>
-              <span class="ms-2 file-key">${key}</span>
-              <span class="file-value">${json[key]}</span>
-            `;
+            file.innerHTML = `<i class="bi ${typeof json[key] === "boolean" ? (json[key] ? "bi-toggle-on" : "bi-toggle-off") : (typeof json[key] === "number" ? "bi-123" : "bi-alphabet")}"></i>
+              <span class="ms-1 file-key">${key}</span>
+              <span class="file-value">${json[key]}</span>`;
             parentElement.appendChild(file);
             break;
           }
-
-          // Create Number
-          case "number": {
-            const fileNumber = document.createElement("div");
-            fileNumber.className = "list-group-item file d-flex align-items-center";
-            fileNumber.innerHTML = `
-              <i class="bi bi-123"></i>
-              <span class="ms-2 file-key">${key}</span>
-              <span class="file-value">${json[key]}</span>
-            `;
-            parentElement.appendChild(fileNumber);
-            break;
-          }
-
-          // Create Boolean
-          case "boolean": {
-            const fileBoolean = document.createElement("div");
-            fileBoolean.className = "list-group-item file d-flex align-items-center";
-            if (json[key] === true) {
-              fileBoolean.innerHTML = `
-                <i class="bi bi-toggle-on"></i>
-                <span class="ms-2 file-key">${key}</span>
-                <span class="file-value">${json[key]}</span>
-              `;
-            } else {
-              fileBoolean.innerHTML = `
-                <i class="bi bi-toggle-off"></i>
-                <span class="ms-2 file-key">${key}</span>
-                <span class="file-value">${json[key]}</span>
-              `;
-            }
-            parentElement.appendChild(fileBoolean);
-            break;
-          }
-
-          // Create Folder (object)
           case "object": {
             const folder = document.createElement("div");
             folder.className = "list-group-item folder d-flex align-items-center";
-            folder.innerHTML = `<i class="bi bi-folder"></i> <span class="ms-2">${key}</span>`;
+            folder.innerHTML = `<i class="bi bi-folder"></i> <span class="ms-1">${key}</span>`;
             folder.dataset.folder = key;
-
             const folderContent = document.createElement("div");
             folderContent.className = "folder-content hidden";
-
             folder.addEventListener("click", () => {
               folderContent.classList.toggle("hidden");
-              const icon = folder.querySelector("i");
-              icon.className =
-                icon.className === "bi bi-folder"
-                  ? "bi bi-folder2-open"
-                  : "bi bi-folder";
+              folder.querySelector("i").className = folderContent.classList.contains("hidden") ? "bi bi-folder" : "bi bi-folder2-open";
             });
-
-            // Append folder and its content container
             parentElement.appendChild(folder);
             parentElement.appendChild(folderContent);
-
-            // Recursively populate the folder content
             createBrowserContent(json[key], folderContent);
             break;
           }
-
-          default:
-            break;
         }
       }
     }
-
-    // Initialize the browser with JSON content
     createBrowserContent(fileSystem, fileBrowser);
   </script>
 </body>
