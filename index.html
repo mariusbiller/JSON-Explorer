@@ -17,6 +17,9 @@
     .navbar-brand img { vertical-align: middle; }
     .file-key { width: 120px; display: inline-block; }
     .file-value { margin-left: 5px; }
+    .value-string { color: rgb(241, 0, 153); }
+    .value-number { color: rgb(55, 164, 0); }
+    .value-boolean  { color: rgb(26, 32, 164); }
     .list-group-item { padding: 2px 5px; }
     .container-fluid { max-width: none; }
   </style>
@@ -37,27 +40,55 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const fileSystem = { "restaurant": { "name": "Sunny Side Cafe", "open": true, "rating": 4.7, "location": { "address": "123 Main Street", "city": "Berlin", "country": "Germany" }, "menu": [ { "id": 1, "name": "Pancakes", "price": 7.99, "ingredients": ["Flour", "Milk", "Eggs", "Sugar"], "vegan": false, "available": true, "sizes": { "small": 5.99, "medium": 7.99, "large": 9.99 } }, { "id": 2, "name": "Avocado Toast", "price": 6.99, "ingredients": ["Bread", "Avocado", "Tomato", "Olive Oil"], "vegan": true, "available": true, "sizes": null } ], "orders": [ { "orderId": "ORD12345", "customer": { "name": "Alice Johnson", "phone": "+49 152 3456789", "isLoyaltyMember": true }, "items": [ { "menuId": 1, "quantity": 2, "size": "medium" }, { "menuId": 2, "quantity": 1, "size": null } ], "totalPrice": 22.97, "status": "pending", "paymentMethod": "credit_card" } ] } };
+    const fileSystem = { "restaurant": { "name": "Sunny Side Cafe", "open": true, "rating": 4.7, "location": { "address": "123 Main Street", "city": null, "country": NaN }, "menu": [ { "id": 1, "name": "Pancakes", "price": 7.99, "ingredients": ["Flour", "Milk", "Eggs", "Sugar"], "vegan": false, "available": true, "sizes": { "small": 5.99, "medium": 7.99, "large": 9.99 } }, { "id": 2, "name": "Avocado Toast", "price": 6.99, "ingredients": ["Bread", "Avocado", "Tomato", "Olive Oil"], "vegan": true, "available": true, "sizes": null } ], "orders": [ { "orderId": "ORD12345", "customer": { "name": "Alice Johnson", "phone": "+49 152 3456789", "isLoyaltyMember": true }, "items": [ { "menuId": 1, "quantity": 2, "size": "medium" }, { "menuId": 2, "quantity": 1, "size": null } ], "totalPrice": 22.97, "status": "pending", "paymentMethod": "credit_card" } ] } };
 
     const fileBrowser = document.getElementById("fileBrowser");
+
     function createBrowserContent(json, parentElement) {
       for (const key in json) {
         switch (typeof json[key]) {
-          case "string":
-          case "number":
-          case "boolean": {
-            const file = document.createElement("div");
+
+          case "string": {
+            valueClass = "value-string";
+            let file = document.createElement("div");
             file.className = "list-group-item file d-flex align-items-center";
-            file.innerHTML = `<i class="bi ${typeof json[key] === "boolean" ? (json[key] ? "bi-toggle-on" : "bi-toggle-off") : (typeof json[key] === "number" ? "bi-123" : "bi-alphabet")}"></i>
-              <span class="ms-1 file-key">${key}</span>
-              <span class="file-value">${json[key]}</span>`;
+            file.innerHTML = `<i class="bi bi-file-earmark"></i>
+            <span class="ms-1 file-key">${key}</span>
+            <span class="file-value ${valueClass}">${json[key]}</span>`;
             parentElement.appendChild(file);
             break;
           }
+
+          case "number": {
+            let valueClass = "value-number";
+            let file = document.createElement("div");
+            file.className = "list-group-item file d-flex align-items-center";
+            file.innerHTML = `<i class="bi bi-123"></i>
+            <span class="ms-1 file-key">${key}</span>
+            <span class="file-value ${valueClass}">${json[key]}</span>`;
+            parentElement.appendChild(file);
+            break;
+          }
+
+
+          case "boolean": {
+            valueClass = "value-boolean";
+            let file = document.createElement("div");
+            file.className = "list-group-item file d-flex align-items-center";
+            file.innerHTML = `<i class="bi ${ (json[key] ? "bi-toggle-on" : "bi-toggle-off") }"></i>
+            <span class="ms-1 file-key">${key}</span>
+            <span class="file-value ${valueClass}">${json[key]}</span>`;
+            parentElement.appendChild(file);
+            break;
+          }
+          
           case "object": {
+            valueClass = "value-folder";
             const folder = document.createElement("div");
             folder.className = "list-group-item folder d-flex align-items-center";
-            folder.innerHTML = `<i class="bi bi-folder"></i> <span class="ms-1">${key}</span>`;
+            folder.innerHTML = `<i class="bi bi-folder"></i> 
+            <span class="ms-1 file-key">${key}</span>
+            <span class="file-value ${valueClass}">...</span>`;
             folder.dataset.folder = key;
             const folderContent = document.createElement("div");
             folderContent.className = "folder-content hidden";
