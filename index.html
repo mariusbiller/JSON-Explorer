@@ -17,9 +17,9 @@
     .navbar-brand img { vertical-align: middle; }
     .file-key { width: 120px; display: inline-block; }
     .file-value { margin-left: 5px; }
-    .value-string { color: rgb(241, 0, 153); }
-    .value-number { color: rgb(55, 164, 0); }
-    .value-boolean  { color: rgb(26, 32, 164); }
+    .value-string { color: rgb(250, 0, 170); }
+    .value-number { color: rgb(0, 170, 0); }
+    .value-boolean  { color: rgb(0, 170, 0); }
     .list-group-item { padding: 2px 5px; }
     .container-fluid { max-width: none; }
   </style>
@@ -29,7 +29,7 @@
     <div class="container-fluid">
       <a class="navbar-brand d-flex align-items-center" href="#">
         <img src="https://cdn-icons-png.flaticon.com/512/5968/5968774.png" alt="logo" width="20" class="me-1"/>
-        <span style="font-size: 14px;">JSON-Lens</span>
+        <span style="font-size: 14px;">JSON-Explorer</span>
       </a>
     </div>
   </nav>
@@ -69,7 +69,6 @@
             parentElement.appendChild(file);
             break;
           }
-
 
           case "boolean": {
             valueClass = "value-boolean";
