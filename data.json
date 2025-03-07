@@ -1,0 +1,53 @@
+{
+    "restaurant": {
+      "name": "Sunny Side Cafe",
+      "open": true,
+      "rating": 4.7,
+      "location": {
+        "address": "123 Main Street",
+        "city": null,
+        "country": ["DE","GB","US"]
+      },
+      "menu": [
+        {
+          "id": 1,
+          "name": "Pancakes",
+          "price": 7.99,
+          "ingredients": ["Flour", "Milk", "Eggs", "Sugar"],
+          "vegan": false,
+          "available": true,
+          "sizes": {
+            "small": 5.99,
+            "medium": 7.99,
+            "large": 9.99
+          }
+        },
+        {
+          "id": 2,
+          "name": "Avocado Toast",
+          "price": 6.99,
+          "ingredients": ["Bread", "Avocado", "Tomato", "Olive Oil"],
+          "vegan": true,
+          "available": true,
+          "sizes": null
+        }
+      ],
+      "orders": [
+        {
+          "orderId": "ORD12345",
+          "customer": {
+            "name": "Alice Johnson",
+            "phone": "+49 152 3456789",
+            "isLoyaltyMember": true
+          },
+          "items": [
+            { "menuId": 1, "quantity": 2, "size": "medium" },
+            { "menuId": 2, "quantity": 1, "size": null }
+          ],
+          "totalPrice": 22.97,
+          "status": "pending",
+          "paymentMethod": "credit_card"
+        }
+      ]
+    }
+  }
