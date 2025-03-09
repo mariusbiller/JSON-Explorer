@@ -1,5 +1,6 @@
 body { font-size: 12px; margin: 0; padding: 0; }
 .container { max-width: none; width: auto; padding: 5px; }
+.container-fluid { max-width: none; }
 .folder, .file { cursor: pointer; margin: 1px 0; border: none; padding: 2px 5px; }
 .folder { font-weight: bold; }
 .folder-content { margin-left: 10px; }
@@ -10,6 +11,7 @@ body { font-size: 12px; margin: 0; padding: 0; }
 .file-value { margin-left: 5px; }
 .value-string { color: rgb(250, 0, 170); }
 .value-number { color: rgb(0, 170, 0); }
-.value-boolean  { color: rgb(0, 170, 0); }
+.value-boolean { color: rgb(0, 170, 0); }
 .list-group-item { padding: 2px 5px; }
-.container-fluid { max-width: none; }
+#dropZone { min-height: 80px; display: flex; align-items: center; justify-content: center; }
+#dropZone.dragover { background-color: #e2e6ea; }

@@ -1,18 +1,91 @@
-// Fetch the JSON data from data.json
-fetch('data.json')
-  .then(response => response.json())
-  .then(fileSystem => {
-    const fileBrowser = document.getElementById("fileBrowser");
-    createBrowserContent(fileSystem, fileBrowser);
-  })
-  .catch(error => console.error('Error loading JSON:', error));
+/******************************************************
+ * 1. On Page Load: Check ?link=... and fetch JSON
+ ******************************************************/
+window.addEventListener('DOMContentLoaded', () => {
+  const linkParam = getLinkFromUrl();
+  if (!linkParam) return; // Guard clause: no link => do nothing
+  fetchJsonAndDisplay(linkParam);
+});
 
-// Recursive function to build the file browser structure
+/** Returns the 'link' parameter from ?link=... */
+function getLinkFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("link");
+}
+
+/** Fetch JSON from remote and display it. */
+async function fetchJsonAndDisplay(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    const fileBrowser = document.getElementById("fileBrowser");
+    fileBrowser.innerHTML = ""; // Clear previous
+    createBrowserContent(data, fileBrowser);
+  } catch (err) {
+    console.error("Error fetching/parsing remote JSON:", err);
+  }
+}
+
+/******************************************************
+ * 2. File Input & Drag/Drop => Display JSON
+ ******************************************************/
+
+/** Handle file input change */
+document.getElementById("jsonFile").addEventListener("change", (evt) => {
+  const file = evt.target.files[0];
+  if (!file) return; // Guard clause
+  parseFileAndDisplay(file);
+  closeModal("#openModal");
+});
+
+/** Drag & Drop handlers */
+const dropZone = document.getElementById("dropZone");
+
+dropZone.addEventListener("dragover", (evt) => {
+  evt.preventDefault();
+  dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", (evt) => {
+  evt.preventDefault();
+  dropZone.classList.remove("dragover");
+
+  const file = evt.dataTransfer.files[0];
+  if (!file) return; // Guard clause
+  parseFileAndDisplay(file);
+  closeModal("#openModal");
+});
+
+/** Reads a file, parses JSON, displays it */
+function parseFileAndDisplay(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const jsonData = JSON.parse(reader.result);
+      const fileBrowser = document.getElementById("fileBrowser");
+      fileBrowser.innerHTML = ""; // Clear
+      createBrowserContent(jsonData, fileBrowser);
+    } catch (err) {
+      alert("Invalid JSON file.");
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+  /*************************************
+   * 3. Build JSON File Browser
+   *************************************/
 function createBrowserContent(json, parentElement) {
   for (const key in json) {
+    if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
     const value = json[key];
     const type = typeof value;
-
+  
     switch (type) {
       case "string": {
         const file = document.createElement("div");
@@ -25,7 +98,7 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-
+  
       case "number": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
@@ -37,7 +110,7 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-
+  
       case "boolean": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
@@ -50,9 +123,9 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-
+  
       case "object": {
-        // Handle null separately to avoid rendering a folder for null
+        // Handle null
         if (value === null) {
           const file = document.createElement("div");
           file.className = "list-group-item file d-flex align-items-center";
@@ -63,7 +136,7 @@ function createBrowserContent(json, parentElement) {
           `;
           parentElement.appendChild(file);
         } else {
-          // Create a folder
+          // Create a "folder"
           const folder = document.createElement("div");
           folder.className = "list-group-item folder d-flex align-items-center";
           folder.innerHTML = `
@@ -72,36 +145,50 @@ function createBrowserContent(json, parentElement) {
             <span class="file-value value-folder">...</span>
           `;
           folder.dataset.folder = key;
-
+  
+          // Hidden sub-content
           const folderContent = document.createElement("div");
           folderContent.className = "folder-content hidden";
-
+  
+          // Toggle logic
           folder.addEventListener("click", () => {
             folderContent.classList.toggle("hidden");
             folder.querySelector("i").className = folderContent.classList.contains("hidden")
               ? "bi bi-folder"
               : "bi bi-folder2-open";
           });
-
+  
           parentElement.appendChild(folder);
           parentElement.appendChild(folderContent);
-
-          // Recursively build structure inside this folder
+  
+          // Recursively build the structure
           createBrowserContent(value, folderContent);
         }
         break;
       }
-
-      default:
-        // For any other case not covered above (symbol, function, etc.)
+  
+      default: {
+        // For other types (symbol, undefined, function, etc.)
         const defaultFile = document.createElement("div");
         defaultFile.className = "list-group-item file d-flex align-items-center";
         defaultFile.innerHTML = `
           <i class="bi bi-file-earmark"></i>
           <span class="ms-1 file-key">${key}</span>
-          <span class="file-value">${value}</span>
+          <span class="file-value">${String(value)}</span>
         `;
         parentElement.appendChild(defaultFile);
+      }
     }
   }
+}
+
+/******************************************************
+ * 4. Close the Bootstrap Modal Helper
+ ******************************************************/
+function closeModal(selector) {
+  const modalEl = document.querySelector(selector);
+  if (!modalEl) return; // Guard clause
+
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
 }
