@@ -1,14 +1,14 @@
 /******************************************************
  * GLOBAL: Store current JSON so we can re-render
  ******************************************************/
-let loadedJson = null; // <-- ADDED
+let loadedJson = null;
 
 /******************************************************
  * 1. On Page Load: Check ?link=... and fetch JSON
  ******************************************************/
 window.addEventListener('DOMContentLoaded', () => {
   const linkParam = getLinkFromUrl();
-  if (!linkParam) return; // Guard clause: no link => do nothing
+  if (!linkParam) return; // No link => do nothing
   fetchJsonAndDisplay(linkParam);
 });
 
@@ -23,12 +23,11 @@ async function fetchJsonAndDisplay(url) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    loadedJson = data; // <-- ADDED
+    loadedJson = data;
     const fileBrowser = document.getElementById("fileBrowser");
-    fileBrowser.innerHTML = ""; // Clear previous
-
+    fileBrowser.innerHTML = "";
     // Render with folders collapsed by default
-    createBrowserContent(data, fileBrowser, /* expand= */ false);
+    createBrowserContent(data, fileBrowser, false);
   } catch (err) {
     console.error("Error fetching/parsing remote JSON:", err);
   }
@@ -41,29 +40,25 @@ async function fetchJsonAndDisplay(url) {
 /** Handle file input change */
 document.getElementById("jsonFile").addEventListener("change", (evt) => {
   const file = evt.target.files[0];
-  if (!file) return; // Guard clause
+  if (!file) return;
   parseFileAndDisplay(file);
   closeModal("#openModal");
 });
 
 /** Drag & Drop handlers */
 const dropZone = document.getElementById("dropZone");
-
 dropZone.addEventListener("dragover", (evt) => {
   evt.preventDefault();
   dropZone.classList.add("dragover");
 });
-
 dropZone.addEventListener("dragleave", () => {
   dropZone.classList.remove("dragover");
 });
-
 dropZone.addEventListener("drop", (evt) => {
   evt.preventDefault();
   dropZone.classList.remove("dragover");
-
   const file = evt.dataTransfer.files[0];
-  if (!file) return; // Guard clause
+  if (!file) return;
   parseFileAndDisplay(file);
   closeModal("#openModal");
 });
@@ -74,12 +69,11 @@ function parseFileAndDisplay(file) {
   reader.onload = () => {
     try {
       const jsonData = JSON.parse(reader.result);
-      loadedJson = jsonData; // <-- ADDED
+      loadedJson = jsonData;
       const fileBrowser = document.getElementById("fileBrowser");
-      fileBrowser.innerHTML = ""; // Clear
-
+      fileBrowser.innerHTML = "";
       // Render with folders collapsed by default
-      createBrowserContent(jsonData, fileBrowser, /* expand= */ false);
+      createBrowserContent(jsonData, fileBrowser, false);
     } catch (err) {
       alert("Invalid JSON file.");
       console.error(err);
@@ -92,10 +86,10 @@ function parseFileAndDisplay(file) {
  * 3. Build JSON File Browser
  *************************************/
 /**
- * Create UI for the given JSON object/array. 
- * @param {Object|Array} json - The JSON data
- * @param {HTMLElement} parentElement - Where to attach
- * @param {boolean} expand - Whether all folders should start expanded
+ * Create UI for the given JSON data.
+ * @param {Object|Array} json - The JSON data.
+ * @param {HTMLElement} parentElement - Element to attach content.
+ * @param {boolean} expand - Whether folders should be expanded.
  */
 function createBrowserContent(json, parentElement, expand = false) {
   for (const key in json) {
@@ -142,7 +136,7 @@ function createBrowserContent(json, parentElement, expand = false) {
       }
 
       case "object": {
-        // Handle null
+        // Handle null value
         if (value === null) {
           const file = document.createElement("div");
           file.className = "list-group-item file d-flex align-items-center";
@@ -153,7 +147,7 @@ function createBrowserContent(json, parentElement, expand = false) {
           `;
           parentElement.appendChild(file);
         } else {
-          // Create a "folder"
+          // Create folder element for objects/arrays
           const folder = document.createElement("div");
           folder.className = "list-group-item folder d-flex align-items-center";
           folder.innerHTML = `
@@ -163,18 +157,16 @@ function createBrowserContent(json, parentElement, expand = false) {
           `;
           folder.dataset.folder = key;
 
-          // Hidden sub-content
+          // Folder content container
           const folderContent = document.createElement("div");
           folderContent.className = "folder-content";
-          
-          // NEW: If expand==false, keep hidden; if expand==true, show folder
           if (!expand) {
             folderContent.classList.add("hidden");
           } else {
             folder.querySelector("i").className = "bi bi-folder2-open";
           }
 
-          // Toggle logic on click
+          // Toggle folder open/close on click
           folder.addEventListener("click", () => {
             folderContent.classList.toggle("hidden");
             folder.querySelector("i").className = folderContent.classList.contains("hidden")
@@ -184,15 +176,14 @@ function createBrowserContent(json, parentElement, expand = false) {
 
           parentElement.appendChild(folder);
           parentElement.appendChild(folderContent);
-
-          // Recursively build the structure
+          // Recursively build sub-content
           createBrowserContent(value, folderContent, expand);
         }
         break;
       }
 
       default: {
-        // For other types (symbol, undefined, function, etc.)
+        // For other types (undefined, function, etc.)
         const defaultFile = document.createElement("div");
         defaultFile.className = "list-group-item file d-flex align-items-center";
         defaultFile.innerHTML = `
@@ -211,8 +202,7 @@ function createBrowserContent(json, parentElement, expand = false) {
  ******************************************************/
 function closeModal(selector) {
   const modalEl = document.querySelector(selector);
-  if (!modalEl) return; // Guard clause
-
+  if (!modalEl) return;
   const modal = bootstrap.Modal.getInstance(modalEl);
   if (modal) modal.hide();
 }
@@ -221,15 +211,69 @@ function closeModal(selector) {
  * 5. EXPAND / COLLAPSE ALL
  ******************************************************/
 document.getElementById("expandAllBtn").addEventListener("click", () => {
-  if (!loadedJson) return; // No JSON loaded yet
+  if (!loadedJson) return;
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
-  createBrowserContent(loadedJson, fileBrowser, /* expand= */ true);
+  createBrowserContent(loadedJson, fileBrowser, true);
 });
 
 document.getElementById("collapseAllBtn").addEventListener("click", () => {
-  if (!loadedJson) return; // No JSON loaded yet
+  if (!loadedJson) return;
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
-  createBrowserContent(loadedJson, fileBrowser, /* expand= */ false);
+  createBrowserContent(loadedJson, fileBrowser, false);
 });
+
+/******************************************************
+ * 6. SEARCH FUNCTIONALITY
+ *    Re-render the JSON in "expand all" mode filtering for keys/values that include the search term.
+ ******************************************************/
+document.getElementById("searchInput").addEventListener("input", () => {
+  const searchTerm = document.getElementById("searchInput").value.trim();
+  const fileBrowser = document.getElementById("fileBrowser");
+  fileBrowser.innerHTML = "";
+  if (!loadedJson) return;
+  if (searchTerm === "") {
+    // If search input is cleared, show the full JSON in expanded mode.
+    createBrowserContent(loadedJson, fileBrowser, true);
+  } else {
+    // Filter the loaded JSON based on the search term.
+    const filtered = filterJson(loadedJson, searchTerm) || {};
+    createBrowserContent(filtered, fileBrowser, true);
+  }
+});
+
+/******************************************************
+ * 7. Helper: Filter JSON by search term
+ *    Recursively returns a version of the JSON that includes only keys or values matching the search term.
+ ******************************************************/
+function filterJson(json, searchTerm) {
+  if (!searchTerm) return json;
+  searchTerm = searchTerm.toLowerCase();
+
+  if (typeof json !== "object" || json === null) {
+    // For primitive values, check if they include the search term.
+    return String(json).toLowerCase().includes(searchTerm) ? json : undefined;
+  }
+
+  // For arrays, filter each element.
+  if (Array.isArray(json)) {
+    const filteredArray = json
+      .map(item => filterJson(item, searchTerm))
+      .filter(item => item !== undefined);
+    return filteredArray.length > 0 ? filteredArray : undefined;
+  }
+
+  // For objects, build a new object with matching keys/values.
+  const filteredObj = {};
+  Object.keys(json).forEach(key => {
+    const value = json[key];
+    const keyMatches = key.toLowerCase().includes(searchTerm);
+    const filteredValue = filterJson(value, searchTerm);
+    if (keyMatches || filteredValue !== undefined) {
+      filteredObj[key] = filteredValue !== undefined ? filteredValue : value;
+    }
+  });
+
+  return Object.keys(filteredObj).length > 0 ? filteredObj : undefined;
+}
