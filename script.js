@@ -1,4 +1,9 @@
 /******************************************************
+ * GLOBAL: Store current JSON so we can re-render
+ ******************************************************/
+let loadedJson = null; // <-- ADDED
+
+/******************************************************
  * 1. On Page Load: Check ?link=... and fetch JSON
  ******************************************************/
 window.addEventListener('DOMContentLoaded', () => {
@@ -18,9 +23,12 @@ async function fetchJsonAndDisplay(url) {
   try {
     const response = await fetch(url);
     const data = await response.json();
+    loadedJson = data; // <-- ADDED
     const fileBrowser = document.getElementById("fileBrowser");
     fileBrowser.innerHTML = ""; // Clear previous
-    createBrowserContent(data, fileBrowser);
+
+    // Render with folders collapsed by default
+    createBrowserContent(data, fileBrowser, /* expand= */ false);
   } catch (err) {
     console.error("Error fetching/parsing remote JSON:", err);
   }
@@ -66,9 +74,12 @@ function parseFileAndDisplay(file) {
   reader.onload = () => {
     try {
       const jsonData = JSON.parse(reader.result);
+      loadedJson = jsonData; // <-- ADDED
       const fileBrowser = document.getElementById("fileBrowser");
       fileBrowser.innerHTML = ""; // Clear
-      createBrowserContent(jsonData, fileBrowser);
+
+      // Render with folders collapsed by default
+      createBrowserContent(jsonData, fileBrowser, /* expand= */ false);
     } catch (err) {
       alert("Invalid JSON file.");
       console.error(err);
@@ -77,15 +88,21 @@ function parseFileAndDisplay(file) {
   reader.readAsText(file);
 }
 
-  /*************************************
-   * 3. Build JSON File Browser
-   *************************************/
-function createBrowserContent(json, parentElement) {
+/*************************************
+ * 3. Build JSON File Browser
+ *************************************/
+/**
+ * Create UI for the given JSON object/array. 
+ * @param {Object|Array} json - The JSON data
+ * @param {HTMLElement} parentElement - Where to attach
+ * @param {boolean} expand - Whether all folders should start expanded
+ */
+function createBrowserContent(json, parentElement, expand = false) {
   for (const key in json) {
     if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
     const value = json[key];
     const type = typeof value;
-  
+
     switch (type) {
       case "string": {
         const file = document.createElement("div");
@@ -98,7 +115,7 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-  
+
       case "number": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
@@ -110,7 +127,7 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-  
+
       case "boolean": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
@@ -123,7 +140,7 @@ function createBrowserContent(json, parentElement) {
         parentElement.appendChild(file);
         break;
       }
-  
+
       case "object": {
         // Handle null
         if (value === null) {
@@ -145,28 +162,35 @@ function createBrowserContent(json, parentElement) {
             <span class="file-value value-folder">...</span>
           `;
           folder.dataset.folder = key;
-  
+
           // Hidden sub-content
           const folderContent = document.createElement("div");
-          folderContent.className = "folder-content hidden";
-  
-          // Toggle logic
+          folderContent.className = "folder-content";
+          
+          // NEW: If expand==false, keep hidden; if expand==true, show folder
+          if (!expand) {
+            folderContent.classList.add("hidden");
+          } else {
+            folder.querySelector("i").className = "bi bi-folder2-open";
+          }
+
+          // Toggle logic on click
           folder.addEventListener("click", () => {
             folderContent.classList.toggle("hidden");
             folder.querySelector("i").className = folderContent.classList.contains("hidden")
               ? "bi bi-folder"
               : "bi bi-folder2-open";
           });
-  
+
           parentElement.appendChild(folder);
           parentElement.appendChild(folderContent);
-  
+
           // Recursively build the structure
-          createBrowserContent(value, folderContent);
+          createBrowserContent(value, folderContent, expand);
         }
         break;
       }
-  
+
       default: {
         // For other types (symbol, undefined, function, etc.)
         const defaultFile = document.createElement("div");
@@ -192,3 +216,20 @@ function closeModal(selector) {
   const modal = bootstrap.Modal.getInstance(modalEl);
   if (modal) modal.hide();
 }
+
+/******************************************************
+ * 5. EXPAND / COLLAPSE ALL
+ ******************************************************/
+document.getElementById("expandAllBtn").addEventListener("click", () => {
+  if (!loadedJson) return; // No JSON loaded yet
+  const fileBrowser = document.getElementById("fileBrowser");
+  fileBrowser.innerHTML = "";
+  createBrowserContent(loadedJson, fileBrowser, /* expand= */ true);
+});
+
+document.getElementById("collapseAllBtn").addEventListener("click", () => {
+  if (!loadedJson) return; // No JSON loaded yet
+  const fileBrowser = document.getElementById("fileBrowser");
+  fileBrowser.innerHTML = "";
+  createBrowserContent(loadedJson, fileBrowser, /* expand= */ false);
+});
