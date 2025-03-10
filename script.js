@@ -34,33 +34,19 @@ async function fetchJsonAndDisplay(url) {
 }
 
 /******************************************************
- * 2. File Input & Drag/Drop => Display JSON
+ * 2. OPEN Button => File Dialog => Display JSON
  ******************************************************/
+
+// Click the hidden file input when "Open" button is pressed
+document.getElementById("openBtn").addEventListener("click", () => {
+  document.getElementById("jsonFile").click();
+});
 
 /** Handle file input change */
 document.getElementById("jsonFile").addEventListener("change", (evt) => {
   const file = evt.target.files[0];
   if (!file) return;
   parseFileAndDisplay(file);
-  closeModal("#openModal");
-});
-
-/** Drag & Drop handlers */
-const dropZone = document.getElementById("dropZone");
-dropZone.addEventListener("dragover", (evt) => {
-  evt.preventDefault();
-  dropZone.classList.add("dragover");
-});
-dropZone.addEventListener("dragleave", () => {
-  dropZone.classList.remove("dragover");
-});
-dropZone.addEventListener("drop", (evt) => {
-  evt.preventDefault();
-  dropZone.classList.remove("dragover");
-  const file = evt.dataTransfer.files[0];
-  if (!file) return;
-  parseFileAndDisplay(file);
-  closeModal("#openModal");
 });
 
 /** Reads a file, parses JSON, displays it */
@@ -85,12 +71,6 @@ function parseFileAndDisplay(file) {
 /*************************************
  * 3. Build JSON File Browser
  *************************************/
-/**
- * Create UI for the given JSON data.
- * @param {Object|Array} json - The JSON data.
- * @param {HTMLElement} parentElement - Element to attach content.
- * @param {boolean} expand - Whether folders should be expanded.
- */
 function createBrowserContent(json, parentElement, expand = false) {
   for (const key in json) {
     if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
@@ -198,17 +178,7 @@ function createBrowserContent(json, parentElement, expand = false) {
 }
 
 /******************************************************
- * 4. Close the Bootstrap Modal Helper
- ******************************************************/
-function closeModal(selector) {
-  const modalEl = document.querySelector(selector);
-  if (!modalEl) return;
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-}
-
-/******************************************************
- * 5. EXPAND / COLLAPSE ALL
+ * 4. EXPAND / COLLAPSE ALL
  ******************************************************/
 document.getElementById("expandAllBtn").addEventListener("click", () => {
   if (!loadedJson) return;
@@ -225,14 +195,16 @@ document.getElementById("collapseAllBtn").addEventListener("click", () => {
 });
 
 /******************************************************
- * 6. SEARCH FUNCTIONALITY
- *    Re-render the JSON in "expand all" mode filtering for keys/values that include the search term.
+ * 5. SEARCH FUNCTIONALITY
+ *    Re-render the JSON in "expand all" mode filtering 
+ *    for keys/values that include the search term.
  ******************************************************/
 document.getElementById("searchInput").addEventListener("input", () => {
   const searchTerm = document.getElementById("searchInput").value.trim();
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
   if (!loadedJson) return;
+
   if (searchTerm === "") {
     // If search input is cleared, show the full JSON in expanded mode.
     createBrowserContent(loadedJson, fileBrowser, true);
@@ -244,8 +216,7 @@ document.getElementById("searchInput").addEventListener("input", () => {
 });
 
 /******************************************************
- * 7. Helper: Filter JSON by search term
- *    Recursively returns a version of the JSON that includes only keys or values matching the search term.
+ * 6. Helper: Filter JSON by search term
  ******************************************************/
 function filterJson(json, searchTerm) {
   if (!searchTerm) return json;
