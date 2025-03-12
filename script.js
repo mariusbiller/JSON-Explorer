@@ -101,7 +101,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
         file.className = "list-group-item file d-flex align-items-center";
         file.innerHTML = `
           <i class="bi bi-file-earmark"></i>
-          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
+          <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-string">${value}</span>
         `;
         parentElement.appendChild(file);
@@ -112,7 +112,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
         file.className = "list-group-item file d-flex align-items-center";
         file.innerHTML = `
           <i class="bi bi-123"></i>
-          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
+          <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-number">${value}</span>
         `;
         parentElement.appendChild(file);
@@ -124,7 +124,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
         const iconClass = value ? "bi-toggle-on" : "bi-toggle-off";
         file.innerHTML = `
           <i class="bi ${iconClass}"></i>
-          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
+          <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-boolean">${value}</span>
         `;
         parentElement.appendChild(file);
@@ -137,7 +137,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
           file.className = "list-group-item file d-flex align-items-center";
           file.innerHTML = `
             <i class="bi bi-file-earmark"></i>
-            <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
+            <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
             <span class="file-value value-string">null</span>
           `;
           parentElement.appendChild(file);
@@ -147,7 +147,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
           folder.className = "list-group-item folder d-flex align-items-center";
           folder.innerHTML = `
             <i class="bi bi-folder"></i>
-            <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
+            <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
             <span class="file-value value-folder">...</span>
           `;
           folder.dataset.folder = key;
