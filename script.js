@@ -4,6 +4,24 @@
 let loadedJson = null;
 
 /******************************************************
+ * 0. Helper: Compute maximum key length from JSON
+ ******************************************************/
+function getMaxKeyLength(json) {
+  let max = 0;
+  function traverse(obj) {
+    if (typeof obj !== "object" || obj === null) return;
+    Object.keys(obj).forEach(key => {
+      if (key.length > max) max = key.length;
+      if (typeof obj[key] === "object" && obj[key] !== null) {
+        traverse(obj[key]);
+      }
+    });
+  }
+  traverse(json);
+  return max;
+}
+
+/******************************************************
  * 1. On Page Load: Check ?link=... and fetch JSON
  ******************************************************/
 window.addEventListener('DOMContentLoaded', () => {
@@ -26,8 +44,9 @@ async function fetchJsonAndDisplay(url) {
     loadedJson = data;
     const fileBrowser = document.getElementById("fileBrowser");
     fileBrowser.innerHTML = "";
+    const maxKeyLength = getMaxKeyLength(data);
     // Render with folders collapsed by default
-    createBrowserContent(data, fileBrowser, false);
+    createBrowserContent(data, fileBrowser, false, maxKeyLength);
   } catch (err) {
     console.error("Error fetching/parsing remote JSON:", err);
   }
@@ -36,7 +55,6 @@ async function fetchJsonAndDisplay(url) {
 /******************************************************
  * 2. OPEN Button => File Dialog => Display JSON
  ******************************************************/
-
 // Click the hidden file input when "Open" button is pressed
 document.getElementById("openBtn").addEventListener("click", () => {
   document.getElementById("jsonFile").click();
@@ -58,8 +76,9 @@ function parseFileAndDisplay(file) {
       loadedJson = jsonData;
       const fileBrowser = document.getElementById("fileBrowser");
       fileBrowser.innerHTML = "";
+      const maxKeyLength = getMaxKeyLength(jsonData);
       // Render with folders collapsed by default
-      createBrowserContent(jsonData, fileBrowser, false);
+      createBrowserContent(jsonData, fileBrowser, false, maxKeyLength);
     } catch (err) {
       alert("Invalid JSON file.");
       console.error(err);
@@ -71,50 +90,46 @@ function parseFileAndDisplay(file) {
 /*************************************
  * 3. Build JSON File Browser
  *************************************/
-function createBrowserContent(json, parentElement, expand = false) {
+function createBrowserContent(json, parentElement, expand = false, maxKeyLength) {
   for (const key in json) {
     if (!Object.prototype.hasOwnProperty.call(json, key)) continue;
     const value = json[key];
     const type = typeof value;
-
     switch (type) {
       case "string": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
         file.innerHTML = `
           <i class="bi bi-file-earmark"></i>
-          <span class="ms-1 file-key">${key}</span>
+          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-string">${value}</span>
         `;
         parentElement.appendChild(file);
         break;
       }
-
       case "number": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
         file.innerHTML = `
           <i class="bi bi-123"></i>
-          <span class="ms-1 file-key">${key}</span>
+          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-number">${value}</span>
         `;
         parentElement.appendChild(file);
         break;
       }
-
       case "boolean": {
         const file = document.createElement("div");
         file.className = "list-group-item file d-flex align-items-center";
         const iconClass = value ? "bi-toggle-on" : "bi-toggle-off";
         file.innerHTML = `
           <i class="bi ${iconClass}"></i>
-          <span class="ms-1 file-key">${key}</span>
+          <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value value-boolean">${value}</span>
         `;
         parentElement.appendChild(file);
         break;
       }
-
       case "object": {
         // Handle null value
         if (value === null) {
@@ -122,7 +137,7 @@ function createBrowserContent(json, parentElement, expand = false) {
           file.className = "list-group-item file d-flex align-items-center";
           file.innerHTML = `
             <i class="bi bi-file-earmark"></i>
-            <span class="ms-1 file-key">${key}</span>
+            <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
             <span class="file-value value-string">null</span>
           `;
           parentElement.appendChild(file);
@@ -132,11 +147,10 @@ function createBrowserContent(json, parentElement, expand = false) {
           folder.className = "list-group-item folder d-flex align-items-center";
           folder.innerHTML = `
             <i class="bi bi-folder"></i>
-            <span class="ms-1 file-key">${key}</span>
+            <span class="ms-3 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
             <span class="file-value value-folder">...</span>
           `;
           folder.dataset.folder = key;
-
           // Folder content container
           const folderContent = document.createElement("div");
           folderContent.className = "folder-content";
@@ -145,7 +159,6 @@ function createBrowserContent(json, parentElement, expand = false) {
           } else {
             folder.querySelector("i").className = "bi bi-folder2-open";
           }
-
           // Toggle folder open/close on click
           folder.addEventListener("click", () => {
             folderContent.classList.toggle("hidden");
@@ -153,22 +166,19 @@ function createBrowserContent(json, parentElement, expand = false) {
               ? "bi bi-folder"
               : "bi bi-folder2-open";
           });
-
           parentElement.appendChild(folder);
           parentElement.appendChild(folderContent);
           // Recursively build sub-content
-          createBrowserContent(value, folderContent, expand);
+          createBrowserContent(value, folderContent, expand, maxKeyLength);
         }
         break;
       }
-
       default: {
-        // For other types (undefined, function, etc.)
         const defaultFile = document.createElement("div");
         defaultFile.className = "list-group-item file d-flex align-items-center";
         defaultFile.innerHTML = `
           <i class="bi bi-file-earmark"></i>
-          <span class="ms-1 file-key">${key}</span>
+          <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
           <span class="file-value">${String(value)}</span>
         `;
         parentElement.appendChild(defaultFile);
@@ -184,14 +194,16 @@ document.getElementById("expandAllBtn").addEventListener("click", () => {
   if (!loadedJson) return;
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
-  createBrowserContent(loadedJson, fileBrowser, true);
+  const maxKeyLength = getMaxKeyLength(loadedJson);
+  createBrowserContent(loadedJson, fileBrowser, true, maxKeyLength);
 });
 
 document.getElementById("collapseAllBtn").addEventListener("click", () => {
   if (!loadedJson) return;
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
-  createBrowserContent(loadedJson, fileBrowser, false);
+  const maxKeyLength = getMaxKeyLength(loadedJson);
+  createBrowserContent(loadedJson, fileBrowser, false, maxKeyLength);
 });
 
 /******************************************************
@@ -204,14 +216,13 @@ document.getElementById("searchInput").addEventListener("input", () => {
   const fileBrowser = document.getElementById("fileBrowser");
   fileBrowser.innerHTML = "";
   if (!loadedJson) return;
-
   if (searchTerm === "") {
-    // If search input is cleared, show the full JSON in expanded mode.
-    createBrowserContent(loadedJson, fileBrowser, true);
+    const maxKeyLength = getMaxKeyLength(loadedJson);
+    createBrowserContent(loadedJson, fileBrowser, true, maxKeyLength);
   } else {
-    // Filter the loaded JSON based on the search term.
     const filtered = filterJson(loadedJson, searchTerm) || {};
-    createBrowserContent(filtered, fileBrowser, true);
+    const maxKeyLength = getMaxKeyLength(filtered);
+    createBrowserContent(filtered, fileBrowser, true, maxKeyLength);
   }
 });
 
@@ -221,21 +232,15 @@ document.getElementById("searchInput").addEventListener("input", () => {
 function filterJson(json, searchTerm) {
   if (!searchTerm) return json;
   searchTerm = searchTerm.toLowerCase();
-
   if (typeof json !== "object" || json === null) {
-    // For primitive values, check if they include the search term.
     return String(json).toLowerCase().includes(searchTerm) ? json : undefined;
   }
-
-  // For arrays, filter each element.
   if (Array.isArray(json)) {
     const filteredArray = json
       .map(item => filterJson(item, searchTerm))
       .filter(item => item !== undefined);
     return filteredArray.length > 0 ? filteredArray : undefined;
   }
-
-  // For objects, build a new object with matching keys/values.
   const filteredObj = {};
   Object.keys(json).forEach(key => {
     const value = json[key];
@@ -245,6 +250,5 @@ function filterJson(json, searchTerm) {
       filteredObj[key] = filteredValue !== undefined ? filteredValue : value;
     }
   });
-
   return Object.keys(filteredObj).length > 0 ? filteredObj : undefined;
 }
