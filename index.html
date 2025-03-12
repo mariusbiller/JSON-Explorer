@@ -17,17 +17,21 @@
     <div class="container-fluid">
 
       <a class="navbar-brand"><b>JSON</b> Explorer</a>
-
-      <a id="expandAllBtn" class="nav-link d-inline-block me-1 my-2" href="#">
-        <span><i class="bi bi-arrows-expand me-1"></i>Expand</span>
-        <span><i class="bi bi-arrows-collapse me-1"></i>Collapse</span> 
-      </a>
       
+      <span>
+        <a id="expandAllBtn" class="nav-link d-inline-block me-1 my-2" href="#">
+          <i class="bi bi-arrows-expand me-1"></i>Expand
+        </a>
+        <a id="collapseAllBtn" class="nav-link d-inline-block me-1 my-2" href="#">
+          <i class="bi bi-arrows-collapse me-1"></i>Collapse
+        </a>
+      </span>
 
       <form class="d-flex ms-auto">
         <button id="openBtn" class="btn btn-outline-success me-2" type="button">Open</button>
         <input class="form-control" type="search" placeholder="Search" aria-label="Search" id="searchInput" >
       </form>
+      
     </div>
   </nav>
 
