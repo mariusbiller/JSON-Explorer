@@ -1,5 +1,5 @@
 body { 
-    font-size: 12px; 
+    font-size: 11px; 
     margin: 0; 
     padding: 0; 
   }
@@ -13,9 +13,9 @@ body {
   }
   .folder, .file { 
     cursor: pointer; 
-    margin: 1px 0; 
+    margin: 0px; 
     border: none; 
-    padding: 2px 5px; 
+    padding: 0px; 
   }
   .folder { 
     font-weight: bold; 

@@ -13,26 +13,23 @@
 <body>
 
   <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="padding: 5px;">
-    <div class="container-fluid">
-
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="padding: 0px 10px;">
       <a class="navbar-brand"><b>JSON</b> Explorer</a>
-      
+
       <span>
-        <a id="expandAllBtn" class="nav-link d-inline-block me-1 my-2" href="#">
+        <a id="expandAllBtn" class="nav-link d-inline-block me-2" href="#">
           <i class="bi bi-arrows-expand me-1"></i>Expand
         </a>
-        <a id="collapseAllBtn" class="nav-link d-inline-block me-1 my-2" href="#">
+        <a id="collapseAllBtn" class="nav-link d-inline-block me-2" href="#">
           <i class="bi bi-arrows-collapse me-1"></i>Collapse
         </a>
       </span>
-
-      <form class="d-flex ms-auto">
-        <button id="openBtn" class="btn btn-outline-success me-2" type="button">Open</button>
-        <input class="form-control" type="search" placeholder="Search" aria-label="Search" id="searchInput" >
-      </form>
       
-    </div>
+      <form class="d-flex ms-auto">
+        <button id="openBtn" class="btn btn-outline-secondary btn-sm me-1" type="button">Open</button>
+        <input class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search" id="searchInput">
+      </form>
+    
   </nav>
 
   <!-- MAIN CONTENT -->
