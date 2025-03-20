@@ -148,7 +148,7 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
           folder.innerHTML = `
             <i class="bi bi-folder"></i>
             <span class="ms-1 file-key" style="min-width: ${maxKeyLength}ch;">${key}</span>
-            <span class="file-value value-folder">...</span>
+            <span class="file-value value-folder" style="color: grey; font-weight: normal; font-style: italic;">${getJsonPreview(value)}</span>
           `;
           folder.dataset.folder = key;
           // Folder content container
@@ -185,6 +185,20 @@ function createBrowserContent(json, parentElement, expand = false, maxKeyLength)
       }
     }
   }
+}
+
+// Helper: Generate a preview string for an object or array
+function getJsonPreview(json) {
+  if (Array.isArray(json)) {
+      return "...";
+  } 
+  else {
+    // For plain objects, list each key
+    return Object.keys(json)
+              .slice(0,4)
+              .map(key => key + "... ")
+              .join(" ");
+  } 
 }
 
 /******************************************************
